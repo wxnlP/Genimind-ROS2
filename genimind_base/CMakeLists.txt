@@ -51,7 +51,7 @@ install(
 )
 
 # launch
-install(DIRECTORY launch
+install(DIRECTORY launch script
   DESTINATION share/${PROJECT_NAME}
 )
 
