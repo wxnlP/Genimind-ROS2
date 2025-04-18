@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="genimind_description">
+  <!-- 添加虚拟link -->
+  <link name="base_footprint" />
+  <joint name="base_joint" type="fixed">
+      <parent link="base_footprint" />
+      <child link="base_link" />
+      <origin xyz="-0.000168546343865929 0.000259630628177465 0.057" rpy="0 0 0" />
+  </joint>
+  <!-- 添加虚拟link -->
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0107163834360491 0.000899468586330776 0.0460302715080583"
+        rpy="0 0 0" />
+      <mass
+        value="1.53935005060184" />
+      <inertia
+        ixx="0.00331167323770098"
+        ixy="-2.69016521120233E-06"
+        ixz="5.7450549229321E-06"
+        iyy="0.00398777662772737"
+        iyz="3.04727663244699E-07"
+        izz="0.00711295462702725" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="font_left_wheel_link">
+    <inertial>
+      <origin
+        xyz="1.3484E-12 -0.019929 2.0008E-14"
+        rpy="0 0 0" />
+      <mass
+        value="0.057555" />
+      <inertia
+        ixx="2.5601E-05"
+        ixy="-2.0793E-15"
+        ixz="1.1951E-14"
+        iyy="3.4022E-05"
+        iyz="2.6302E-15"
+        izz="2.5601E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/font_left_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/font_left_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="font_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.10999 0.13774 -0.0265"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="font_left_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="back_left_wheel_link">
+    <inertial>
+      <origin
+        xyz="4.8815E-09 -0.019926 1.4263E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.057556" />
+      <inertia
+        ixx="2.5603E-05"
+        ixy="-1.3541E-12"
+        ixz="-5.5003E-12"
+        iyy="3.4021E-05"
+        iyz="1.1387E-12"
+        izz="2.5603E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/back_left_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/back_left_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.11071 0.13774 -0.0265"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_left_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="font_right_wheel_link">
+    <inertial>
+      <origin
+        xyz="-4.8815E-09 0.019926 1.4263E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.057556" />
+      <inertia
+        ixx="2.5603E-05"
+        ixy="-1.3541E-12"
+        ixz="5.5003E-12"
+        iyy="3.4021E-05"
+        iyz="-1.1387E-12"
+        izz="2.5603E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/font_right_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/font_right_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="font_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.10999 -0.13662 -0.0265"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="font_right_wheel_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="back_right_wheel_link">
+    <inertial>
+      <origin
+        xyz="-1.3484E-12 0.019929 1.9974E-14"
+        rpy="0 0 0" />
+      <mass
+        value="0.057555" />
+      <inertia
+        ixx="2.5601E-05"
+        ixy="-2.0793E-15"
+        ixz="-1.1951E-14"
+        iyy="3.4022E-05"
+        iyz="-2.6302E-15"
+        izz="2.5601E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/back_right_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/back_right_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.11071 -0.13662 -0.0265"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_right_wheel_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="mipi_cam_link">
+    <inertial>
+      <origin
+        xyz="0.00017687 0 0.00247"
+        rpy="0 0 0" />
+      <mass
+        value="0.0010193" />
+      <inertia
+        ixx="9.5377E-08"
+        ixy="-2.1423E-24"
+        ixz="-4.5725E-10"
+        iyy="5.483E-08"
+        iyz="-9.7259E-24"
+        izz="4.2837E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/mipi_cam_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/mipi_cam_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="mipi_cam_joint"
+    type="fixed">
+    <origin
+      xyz="0.09523 0.0020576 0.17718"
+      rpy="0 -0.5236 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="mipi_cam_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="depth_cam_link">
+    <inertial>
+      <origin
+        xyz="0.002097 7.806E-05 -0.018839"
+        rpy="0 0 0" />
+      <mass
+        value="0.057088" />
+      <inertia
+        ixx="0.0001312"
+        ixy="2.2152E-07"
+        ixz="1.739E-06"
+        iyy="1.9438E-05"
+        iyz="-2.7599E-08"
+        izz="0.0001316" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/depth_cam_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.37647 0.37647 0.37647 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/depth_cam_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="depth_cam_joint"
+    type="fixed">
+    <origin
+      xyz="0.12831 0.00066093 0.05325"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="depth_cam_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="lidar_link">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/lidar_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://genimind_description/meshes/lidar_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lidar_joint"
+    type="fixed">
+    <origin
+      xyz="-0.086514 0.00070753 0.22325"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="lidar_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
