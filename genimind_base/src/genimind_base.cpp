@@ -10,7 +10,7 @@ GenimindBaseNode::GenimindBaseNode(std::string nodeName) : Node(nodeName)
     /* 声明参数 */
     this->declare_parameter("can_x", "can0");
     this->get_parameter("can_x", can_x_);
-    this->declare_parameter("pub_odom", false);
+    this->declare_parameter("pub_odom", true);
     this->get_parameter("pub_odom", pub_odom_);
     /* 初始化CAN接收器 */
     can_receiver_ = std::make_shared<SocketCanReceiver>(
