@@ -23,14 +23,14 @@ def generate_launch_description():
         "start_rqt",
         default="False"
     )
-    #----------------------------------参数声明-------------------------------------
 
-    # 声明一个urdf文件路径的参数
+     # 声明一个urdf文件路径的参数
     action_declare_arg_urdf_path = launch.actions.DeclareLaunchArgument(
         "urdf", 
         default_value=urdf_file_path,
         description="urdf文件的绝对路径"
     )
+    #----------------------------------参数声明-------------------------------------
 
     # 1.获取指令的返回内容
     substitutions_cmd = launch.substitutions.Command(
@@ -46,7 +46,7 @@ def generate_launch_description():
     robot_state_publisher_node = launch_ros.actions.Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        parameters=[{"robot_description": robot_description}]
+        parameters=[{"robot_description": robot_description} ]
     )
     # joint_state_publisher话题节点启动
     joint_state_publisher_node = launch_ros.actions.Node(
