@@ -43,7 +43,7 @@ rdk_colors = [
 
 
 class BPU_Detect:
-    def __init__(self, model_path, num_classes, coco_names, conf=0.25, iou=0.45, display=True):
+    def __init__(self, model_path, num_classes, coco_names, conf=0.25, iou=0.45, display=True, save_path="result.jpg"):
         """
         
         Args:
@@ -67,6 +67,7 @@ class BPU_Detect:
         self.input_h = self.models.model_input_height
         self.display = display
         self.labels = coco_names
+        self.pic_save_path = save_path
 
     def draw_detection(self,
                    img: np.array, 
@@ -103,7 +104,7 @@ class BPU_Detect:
             x1, y1, x2, y2 = bbox
             print("[INFO] (%d, %d, %d, %d) -> %s: %.2f" % (x1,y1,x2,y2, self.labels[class_id], score))
             self.draw_detection(img, (x1, y1, x2, y2), score, class_id)
-        cv2.imwrite("result_.jpg", img)
+        cv2.imwrite(self.pic_save_path, img)
         
     def camera_init(self):
         """MIPI摄像头初始化"""
