@@ -9,6 +9,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include "geometry_msgs/msg/transform_stamped.hpp"
 /* 自定义接口 */
 #include "genimind_interfaces/msg/genimind_status.hpp"
 #include "genimind_interfaces/srv/genimind_buzzer_led.hpp"

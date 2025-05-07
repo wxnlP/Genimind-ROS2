@@ -274,7 +274,7 @@ void GenimindBaseNode::odom_publish(OdomData* data)
     // 发布里程计话题
     odom_publisher_->publish(odom);
 
-    // TF
+    // 动态TF
     geometry_msgs::msg::TransformStamped t;
 
     t.header.stamp = this->get_clock()->now();
