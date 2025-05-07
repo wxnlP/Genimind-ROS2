@@ -35,43 +35,6 @@ logging.basicConfig(
     datefmt='%H:%M:%S')
 logger = logging.getLogger("RDK_YOLO")
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model-path', type=str, default='models/yolo11n_detect_bayese_640x640_nv12.bin', 
-                        help="""Path to BPU Quantized *.bin Model.
-                                RDK X3(Module): Bernoulli2.
-                                RDK Ultra: Bayes.
-                                RDK X5(Module): Bayes-e.
-                                RDK S100: Nash-e.
-                                RDK S100P: Nash-m.""") 
-    parser.add_argument('--test-img', type=str, default='resource/1.jpg', help='Path to Load Test Image.')
-    parser.add_argument('--img-save-path', type=str, default='result.jpg', help='Path to Load Test Image.')
-    parser.add_argument('--classes-num', type=int, default=80, help='Classes Num to Detect.')
-    parser.add_argument('--reg', type=int, default=16, help='DFL reg layer.')
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='IoU threshold.')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold.')
-    opt = parser.parse_args()
-    logger.info(opt)
-
-    # 实例化
-    model = YOLO11_Detect(opt.model_path, opt.conf_thres, opt.iou_thres)
-    # 读图
-    img = cv2.imread(opt.test_img)
-    # 准备输入数据
-    input_tensor = model.bgr2nv12(img)
-    # 推理
-    outputs = model.c2numpy(model.forward(input_tensor))
-    # 后处理
-    ids, scores, bboxes = model.postProcess(outputs)
-    # 渲染
-    logger.info("\033[1;32m" + "Draw Results: " + "\033[0m")
-    for class_id, score, bbox in zip(ids, scores, bboxes):
-        x1, y1, x2, y2 = bbox
-        logger.info("(%d, %d, %d, %d) -> %s: %.2f"%(x1,y1,x2,y2, coco_names[class_id], score))
-        draw_detection(img, (x1, y1, x2, y2), score, class_id)
-    # 保存结果
-    cv2.imwrite(opt.img_save_path, img)
-    logger.info("\033[1;32m" + f"saved in path: \"./{opt.img_save_path}\"" + "\033[0m")
 
 class BaseModel:
     def __init__(
@@ -99,7 +62,6 @@ class BaseModel:
             logger.info(f"output[{i}], name={quantize_input.name}, type={quantize_input.properties.dtype}, shape={quantize_input.properties.shape}")
 
         self.model_input_height, self.model_input_weight = self.quantize_model[0].inputs[0].properties.shape[2:4]
-        # self.model_camera = self.quantize_model[0].inputs[0]
 
     def resizer(self, img: np.ndarray)->np.ndarray:
         img_h, img_w = img.shape[0:2]
@@ -182,7 +144,8 @@ class YOLO11_Detect(BaseModel):
     def __init__(self, 
                 model_file: str, 
                 conf: float, 
-                iou: float
+                iou: float,
+                num_classes: int
                 ):
         super().__init__(model_file)
         # 将反量化系数准备好, 只需要准备一次
@@ -211,6 +174,8 @@ class YOLO11_Detect(BaseModel):
         self.conf = conf
         self.iou = iou
         self.conf_inverse = -np.log(1/conf - 1)
+        # 模型的种类数量
+        self.num_classes = num_classes
         logger.info("iou threshol = %.2f, conf threshol = %.2f"%(iou, conf))
         logger.info("sigmoid_inverse threshol = %.2f"%self.conf_inverse)
     
@@ -218,12 +183,13 @@ class YOLO11_Detect(BaseModel):
     def postProcess(self, outputs: list[np.ndarray]) -> tuple[list]:
         begin_time = time()
         # reshape
+        # output = outputs[0].squeeze()
         s_bboxes = outputs[0].reshape(-1, 64)
         m_bboxes = outputs[1].reshape(-1, 64)
         l_bboxes = outputs[2].reshape(-1, 64)
-        s_clses = outputs[3].reshape(-1, 80)
-        m_clses = outputs[4].reshape(-1, 80)
-        l_clses = outputs[5].reshape(-1, 80)
+        s_clses = outputs[3].reshape(-1, self.num_classes)
+        m_clses = outputs[4].reshape(-1, self.num_classes)
+        l_clses = outputs[5].reshape(-1, self.num_classes)
 
         # classify: 利用numpy向量化操作完成阈值筛选(优化版 2.0)
         s_max_scores = np.max(s_clses, axis=1)
@@ -287,45 +253,5 @@ class YOLO11_Detect(BaseModel):
         return ids[indices], scores[indices], bboxes
 
 
-coco_names = [
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light", 
-    "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", 
-    "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", 
-    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", 
-    "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", 
-    "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", 
-    "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", 
-    "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
-    ]
 
-rdk_colors = [
-    (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178, 255),(49, 210, 207), (10, 249, 72), (23, 204, 146), (134, 219, 61),
-    (52, 147, 26), (187, 212, 0), (168, 153, 44), (255, 194, 0),(147, 69, 52), (255, 115, 100), (236, 24, 0), (255, 56, 132),
-    (133, 0, 82), (255, 56, 203), (200, 149, 255), (199, 55, 255)]
 
-def draw_detection(img: np.array, 
-                   bbox: tuple[int, int, int, int],
-                   score: float, 
-                   class_id: int) -> None:
-    """
-    Draws a detection bounding box and label on the image.
-
-    Parameters:
-        img (np.array): The input image.
-        bbox (tuple[int, int, int, int]): A tuple containing the bounding box coordinates (x1, y1, x2, y2).
-        score (float): The detection score of the object.
-        class_id (int): The class ID of the detected object.
-    """
-    x1, y1, x2, y2 = bbox
-    color = rdk_colors[class_id%20]
-    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-    label = f"{coco_names[class_id]}: {score:.2f}"
-    (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    label_x, label_y = x1, y1 - 10 if y1 - 10 > label_height else y1 + 10
-    cv2.rectangle(
-        img, (label_x, label_y - label_height), (label_x + label_width, label_y + label_height), color, cv2.FILLED
-    )
-    cv2.putText(img, label, (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
-
-if __name__ == "__main__":
-    main()

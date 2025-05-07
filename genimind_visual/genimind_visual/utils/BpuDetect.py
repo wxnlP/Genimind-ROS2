@@ -35,53 +35,26 @@ def get_display_res():
     disp.close()
     return disp_w_small, disp_h_small
 
-coco_names = [
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light", 
-    "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", 
-    "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", 
-    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", 
-    "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", 
-    "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", 
-    "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", 
-    "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
-    ]
 
 rdk_colors = [
     (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178, 255),(49, 210, 207), (10, 249, 72), (23, 204, 146), (134, 219, 61),
     (52, 147, 26), (187, 212, 0), (168, 153, 44), (255, 194, 0),(147, 69, 52), (255, 115, 100), (236, 24, 0), (255, 56, 132),
     (133, 0, 82), (255, 56, 203), (200, 149, 255), (199, 55, 255)]
 
-def draw_detection(img: np.array, 
-                   bbox: tuple[int, int, int, int],
-                   score: float, 
-                   class_id: int) -> None:
-    """
-    Draws a detection bounding box and label on the image.
-
-    Parameters:
-        img (np.array): The input image.
-        bbox (tuple[int, int, int, int]): A tuple containing the bounding box coordinates (x1, y1, x2, y2).
-        score (float): The detection score of the object.
-        class_id (int): The class ID of the detected object.
-    """
-    x1, y1, x2, y2 = bbox
-    color = rdk_colors[class_id%20]
-    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-    label = f"{coco_names[class_id]}: {score:.2f}"
-    (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    label_x, label_y = x1, y1 - 10 if y1 - 10 > label_height else y1 + 10
-    cv2.rectangle(
-        img, (label_x, label_y - label_height), (label_x + label_width, label_y + label_height), color, cv2.FILLED
-    )
-    cv2.putText(img, label, (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
-
 
 class BPU_Detect:
-    def __init__(self, model_path, conf=0.45, iou=0.25, display=True):
+    def __init__(self, model_path, num_classes, coco_names, conf=0.25, iou=0.45, display=True):
+        """
+        
+        Args:
+            model_path 模型路径
+            num_classes 模型类别数量
+            coco_names 模型标签列表
+        """
         try:
             begin_time = time()
             # self.models = dnn.load(model_path)
-            self.models = YOLO11_Detect(model_path, 0.25, 0.45)
+            self.models = YOLO11_Detect(model_path, conf, iou, num_classes)
             print(f'[INFO] 模型加载时间: {np.round(1000*(time() - begin_time), 2)}ms')
         except Exception as e:
             print(f'[INFO] 加载模型失败: {e}')
@@ -93,18 +66,45 @@ class BPU_Detect:
         self.input_w = self.models.model_input_weight
         self.input_h = self.models.model_input_height
         self.display = display
+        self.labels = coco_names
 
-    def static_image_init(self, img_path):
+    def draw_detection(self,
+                   img: np.array, 
+                   bbox: tuple[int, int, int, int],
+                   score: float, 
+                   class_id: int) -> None:
+        """
+        Draws a detection bounding box and label on the image.
+    
+        Parameters:
+            img (np.array): The input image.
+            bbox (tuple[int, int, int, int]): A tuple containing the bounding box coordinates (x1, y1, x2, y2).
+            score (float): The detection score of the object.
+            class_id (int): The class ID of the detected object.
+        """
+        x1, y1, x2, y2 = bbox
+        color = rdk_colors[class_id % 10]
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+        label = f"{self.labels[class_id]}: {score:.2f}"
+        (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+        label_x, label_y = x1, y1 - 10 if y1 - 10 > label_height else y1 + 10
+        cv2.rectangle(
+            img, (label_x, label_y - label_height), (label_x + label_width, label_y + label_height), color, cv2.FILLED
+        )
+        cv2.putText(img, label, (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+        
+    def static_image_detect(self, img_path):
         """静态图片准备"""
-        img_file = cv2.imread(img_path)
-        h = self.models[0].inputs[0].properties.shape[2]
-        w = self.models[0].inputs[0].properties.shape[3]
-        resized_data = cv2.resize(img_file, (w, h), interpolation=cv2.INTER_AREA)
-        self.nv12_data = self.bgr2nv12_opencv(resized_data)
-
-    def static_image_detect(self):
-        outputs = self.models[0].forward(self.nv12_data)
-
+        img = cv2.imread(img_path)
+        input_tensor = self.models.bgr2nv12(img)
+        outputs = self.models.c2numpy(self.models.forward(input_tensor))
+        ids, scores, bboxes = self.models.postProcess(outputs)
+        for class_id, score, bbox in zip(ids, scores, bboxes):
+            x1, y1, x2, y2 = bbox
+            print("[INFO] (%d, %d, %d, %d) -> %s: %.2f" % (x1,y1,x2,y2, self.labels[class_id], score))
+            self.draw_detection(img, (x1, y1, x2, y2), score, class_id)
+        cv2.imwrite("result_.jpg", img)
+        
     def camera_init(self):
         """MIPI摄像头初始化"""
         # 创建MIPI对象
@@ -141,8 +141,9 @@ class BPU_Detect:
                 ids, scores, bboxes = self.models.postProcess(outputs)
                 for class_id, score, bbox in zip(ids, scores, bboxes):
                     x1, y1, x2, y2 = bbox
-                    print("(%d, %d, %d, %d) -> %s: %.2f"%(x1,y1,x2,y2, coco_names[class_id], score))
-                    # draw_detection(img_bgr, (x1, y1, x2, y2), score, class_id)
+                    # print("(%d, %d, %d, %d) -> %d: %.2f" % (x1,y1,x2,y2, class_id, score))
+                    print("(%d, %d, %d, %d) -> %s: %.2f" % (x1,y1,x2,y2, self.labels[class_id], score))
+                    self.draw_detection(img_bgr, (x1, y1, x2, y2), score, class_id)
                     if self.display:
                         self.disp.set_graph_rect(x1, y1, x2, y2, chn = 2, flush = 1,  color = 0xffff00ff)
         except Exception as e:
@@ -150,9 +151,5 @@ class BPU_Detect:
             self.cam.close_cam()
             if self.display:
                 self.disp.close()
+    
 
-
-if __name__ == "__main__":
-    detect = BPU_Detect('models/yolo11n_detect_bayese_640x640_nv12.bin', display=True)
-    detect.camera_init()
-    detect.camera_detect()
