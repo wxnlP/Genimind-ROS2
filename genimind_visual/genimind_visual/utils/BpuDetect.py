@@ -121,36 +121,75 @@ class BPU_Detect:
 
     def camera_detect(self):
         """MIPI检测"""
+        cam_data = CAM_DATA()
         try:
-            while True:
-                img_bytes = self.cam.get_img(2, 640, 640)
-                if img_bytes is None:
-                    print("WARN: Get image timeout")
-                    continue
-                img_nv12 = np.frombuffer(img_bytes, dtype=np.uint8)
-                img_bgr = cv2.cvtColor(img_nv12.reshape(640*3//2, 640), cv2.COLOR_YUV2BGR_NV12)
-                # cv2.imwrite("result.jpg", img_bgr)
+            img_bytes = self.cam.get_img(2, 640, 640)
+            if img_bytes is None:
+                print("WARN: Get image timeout")
+            img_nv12 = np.frombuffer(img_bytes, dtype=np.uint8)
+            img_bgr = cv2.cvtColor(img_nv12.reshape(640*3//2, 640), cv2.COLOR_YUV2BGR_NV12)
+            # cv2.imwrite("result.jpg", img_bgr)
 
-                # 额外数据处理
-                input_tensor = self.models.bgr2nv12(img_bgr)
-                # 1.推理
-                # outputs = self.models[0].forward(img_nv12)
-                # self.print_properties(outputs[0].properties)
-                # print(f'[INFO] {len(self.models[0].outputs)}')
-                # 2.推理
-                outputs = self.models.c2numpy(self.models.forward(input_tensor))
-                ids, scores, bboxes = self.models.postProcess(outputs)
-                for class_id, score, bbox in zip(ids, scores, bboxes):
-                    x1, y1, x2, y2 = bbox
-                    # print("(%d, %d, %d, %d) -> %d: %.2f" % (x1,y1,x2,y2, class_id, score))
-                    print("(%d, %d, %d, %d) -> %s: %.2f" % (x1,y1,x2,y2, self.labels[class_id], score))
-                    self.draw_detection(img_bgr, (x1, y1, x2, y2), score, class_id)
-                    if self.display:
-                        self.disp.set_graph_rect(x1, y1, x2, y2, chn = 2, flush = 1,  color = 0xffff00ff)
+            # 额外数据处理
+            input_tensor = self.models.bgr2nv12(img_bgr)
+            # 1.推理
+            # outputs = self.models[0].forward(img_nv12)
+            # self.print_properties(outputs[0].properties)
+            # print(f'[INFO] {len(self.models[0].outputs)}')
+            # 2.推理
+            outputs = self.models.c2numpy(self.models.forward(input_tensor))
+            ids, scores, bboxes = self.models.postProcess(outputs)
+            for class_id, score, bbox in zip(ids, scores, bboxes):
+                x1, y1, x2, y2 = bbox
+                print("(%d, %d, %d, %d) -> %s: %.2f" % (x1,y1,x2,y2, self.labels[class_id], score))
+                self.draw_detection(img_bgr, (x1, y1, x2, y2), score, class_id)
+                # 数据处理
+                cam_data.data_num += 1
+                cam_data.data_label.append(self.labels[class_id])
+                cam_data.data_score.append(score)
+                cam_data.data_bbox[cam_data.data_num-1] = [x1, y1, x2, y2]
+
+                if self.display:
+                    self.disp.set_graph_rect(x1, y1, x2, y2, chn = 2, flush = 1,  color = 0xffff00ff)
+            # 传递绘图img
+            cam_data.data_img_cv2 = img_bgr
+            return cam_data
+
         except Exception as e:
             print(f"[WARN] {e}")
             self.cam.close_cam()
             if self.display:
                 self.disp.close()
     
+class CAM_DATA:
+    def __init__(self):
+        """
+        初始化CAM_DATA类
+        """
+        self.data_num = 0
+        self.data_label = []
+        self.data_score = []
+        self.data_bbox = {}
+        self.data_img_cv2 = None
 
+    def get_center(self, bbox):
+        """
+        计算边界框的中心点坐标
+        Args:
+            bbox (dict): 边界框坐标列表，格式为 {index: [x1, y1, x2, y2], ...}
+        Returns:    
+            dict: 边界框中心点坐标字典，格式为 {index: [center_x, center_y], ...}
+        """        
+        centers = {}
+        for i in range(len(bbox)):
+            x1, y1, x2, y2 = bbox[i]
+            center_x = round((x1 + x2) / 2, 2)
+            center_y = round((y1 + y2) / 2, 2)
+            centers[i] = [center_x, center_y]
+        return centers
+    
+    def print_properties(self):
+        print(f"[CAM_DATA] data_num: {self.data_num}")
+        print(f"[CAM_DATA] data_label: {self.data_label}")
+        print(f"[CAM_DATA] data_score: {self.data_score}")
+        print(f"[CAM_DATA] data_bbox: {self.data_bbox}")
