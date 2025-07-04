@@ -24,7 +24,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "fall_detect = genimind_visual.fall_detect:main"
+            "fall_detect = genimind_visual.fall_detect:main",
+            "fall_detect_qt = genimind_visual.fall_detect_qt:main",
+            "test = genimind_visual.test:main",
         ],
     },
 )
